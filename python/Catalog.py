@@ -44,6 +44,14 @@ class Catalog:
 
         return states
 
+    @staticmethod
+    def write_catalog(self, catalog_dict):
+        return
+
+    @staticmethod
+    def get_visible(self, states):
+        return visible
+
 
     @staticmethod
     def kepler_to_states(mu, a, e, i, omega, RAAN, M0, tsince_epoch):
