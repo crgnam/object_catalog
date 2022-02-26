@@ -1,3 +1,6 @@
+# Ignore the cpp build directory
+build/*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
