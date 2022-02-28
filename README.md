@@ -12,6 +12,6 @@ cmake ..
 make
 ```
 ## Run the C++ Integrator
-- `./propagate <catalog.csv> <ephemeris-time>`
+- `./celnav <catalog.csv> <ephemeris-time>`
 
-where `<catalog.csv>` is the path to a catalog .csv file created by python, and `<ephermis-time>` is the ephemeris time to evaluate the catalog objects at.
+where `<catalog.csv>` is the path to a catalog .csv file created by the python `Catalog` class, and `<ephermis-time>` is the ephemeris time to evaluate the catalog objects at.
