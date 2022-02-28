@@ -42,7 +42,7 @@ class Catalog:
         if et is None:
             et = self.epoch
         tsince_epoch = et - self.epoch
-        # print(tsince_epoch)
+        tsince_epoch = np.array([695995269.1844931])
 
         # Convert to orbital elements:
         r_system = Catalog.kepler_to_states(self.mu, self.a, self.e, self.i, self.peri, self.node, self.M, tsince_epoch)
@@ -60,7 +60,7 @@ class Catalog:
 
     @staticmethod
     def kepler_to_states(mu, a, e, i, peri, node, M0, tsince_epoch):
-        # Mean Anomaly:
+        # Calculate Mean Anomaly:
         n = np.sqrt(mu/(a*a*a))
         L = tsince_epoch.size
         theta = np.zeros((L,1))
@@ -68,7 +68,6 @@ class Catalog:
             M = M0 + n*t
 
             # Calculate eccentric anomaly:
-            KeplerConverged = 0
             convergencePercentage = 0.05
             E = 1
             for iters in range(0,1000):
@@ -100,12 +99,12 @@ class Catalog:
         # V_pqw[:,1] = (mu/h)* (e+np.cos(theta))
 
         # Calculate vectorized rotations:
-        a11 = np.cos(node)*np.cos(peri) -np.sin(node)*np.sin(peri)*np.cos(i)
-        a12 = np.sin(node)*np.cos(peri) + np.cos(node)*np.sin(peri)*np.cos(i)
-        a13 = np.sin(peri)*np.sin(i)
+        a11 =  np.cos(node)*np.cos(peri) - np.sin(node)*np.sin(peri)*np.cos(i)
+        a12 =  np.sin(node)*np.cos(peri) + np.cos(node)*np.sin(peri)*np.cos(i)
+        a13 =  np.sin(peri)*np.sin(i)
         a21 = -np.cos(node)*np.sin(peri) - np.sin(node)*np.cos(peri)*np.cos(i)
         a22 = -np.sin(node)*np.sin(peri) + np.cos(node)*np.cos(peri)*np.cos(i)
-        a23 =  np.cos(peri) * np.sin(i)
+        a23 =  np.cos(peri)*np.sin(i)
         a31 =  np.sin(node)*np.sin(i)
         a32 = -np.cos(node)*np.sin(i)
         a33 =  np.cos(i)

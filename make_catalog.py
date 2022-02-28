@@ -32,12 +32,9 @@ my_catalog = Catalog()
 
 now = datetime.now() # current date and time
 epoch = spice.str2et(now.strftime("%Y-%m-%d %H:%M:%S"))
-print(now.strftime("%Y-%m-%d %H:%M:%S"))
-print(epoch)
-print(spice.et2utc(epoch,"C",12))
 et_array = np.arange(epoch, epoch + 5*365*86400, int(10*86400))
-print(spice.et2utc(et_array[-1],"C",12))
 r = my_catalog.get_states(et = et_array)
+print(r)
 
 # Plot the results:
 ax = plt.axes(projection='3d')
