@@ -8,6 +8,38 @@ matlab/mice/
 *.swp
 *.asv
 
+# Ignore SPICE kernels:
+*.bsp
+*.xsp
+
+*.tpc
+*.bpc
+*.xpc
+
+*.ti
+
+*.tf
+
+*.tls
+
+*.bc
+*.xc
+
+*.tsc
+
+*.bds
+
+*.bdb
+*.sdb
+
+*.bep
+*.xep
+
+*.bes
+*.xes
+
+*.ten
+
 # Ignore things generated/saved in catalog creation:
 *.pickle
 *.png

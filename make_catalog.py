@@ -26,7 +26,7 @@ def set_axes_equal(ax):
     ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
     ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
 
-spice.furnsh("generic_kernels/meta_kernel.tm")
+spice.furnsh("meta_kernel.tm")
 
 my_catalog = Catalog()
 
