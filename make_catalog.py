@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from datetime import datetime
 
-from pycelnav import Catalog
+from celnav_py import Catalog
 
 def set_axes_equal(ax):
     x_limits = ax.get_xlim3d()

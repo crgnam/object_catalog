@@ -49,8 +49,8 @@ r = cspice_spkpos('URANUS',et_range,'J2000','NONE','URANUS_BARYCENTER');
 r = cspice_spkpos('NEPTUNE',et_range,'J2000','NONE','NEPTUNE_BARYCENTER');
 [~,r_neptune] = normc(r);
 
-% r = cspice_spkpos('PLUTO',et_range,'J2000','NONE','PLUTO_BARYCENTER');
-% [~,r_pluto] = normc(r);
+r = cspice_spkpos('PLUTO',et_range,'J2000','NONE','PLUTO_BARYCENTER');
+[~,r_pluto] = normc(r);
 
 
 % Plot the results:
@@ -64,9 +64,9 @@ semilogy(t_plt,100*r_jupiter/Rjupiter,'LineWidth',LW);
 semilogy(t_plt,100*r_saturn/Rsaturn,'LineWidth',LW);
 semilogy(t_plt,100*r_uranus/Ruranus,'LineWidth',LW);
 semilogy(t_plt,100*r_neptune/Rneptune,'LineWidth',LW);
-% semilogy(t_plt,100*r_pluto/Rpluto,'LineWidth',LW);
+semilogy(t_plt,100*r_pluto/Rpluto,'LineWidth',LW);
 
-legend('Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune')
+legend('Mercury','Venus','Earth','Mars','Jupiter','Saturn','Uranus','Neptune','Pluto')
 
 grid on
 ylabel('Percentage of Radius')
