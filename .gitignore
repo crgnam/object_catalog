@@ -1,6 +1,9 @@
 # Ignore the cpp build directory
 build/*
 
+# Ignore MICE source code:
+matlab/mice/
+
 # General temporary file ignores:
 *.swp
 *.asv
