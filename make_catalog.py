@@ -28,13 +28,13 @@ def set_axes_equal(ax):
 
 spice.furnsh("meta_kernel.tm")
 
-my_catalog = Catalog()
+my_catalog = Catalog('catalog.pickle')
 
 now = datetime.now() # current date and time
 epoch = spice.str2et(now.strftime("%Y-%m-%d %H:%M:%S"))
-et_array = np.arange(epoch, epoch + 5*365*86400, int(10*86400))
+# et_array = np.arange(epoch, epoch + 5*365*86400, int(10*86400))
+et_array = np.array(epoch)
 r = my_catalog.get_states(et = et_array)
-print(r)
 
 # Plot the results:
 ax = plt.axes(projection='3d')
@@ -43,6 +43,7 @@ ax = plt.axes(projection='3d')
 zline = np.linspace(0, 15, 1000)
 xline = np.sin(zline)
 yline = np.cos(zline)
-ax.plot3D(r[0,:], r[1,:], r[2,:], 'gray')
+# ax.plot3D(r[0,:], r[1,:], r[2,:], 'gray')
+ax.scatter3D(r[0,:],r[1,:],r[2,:],'black')
 set_axes_equal(ax)
 plt.show()
