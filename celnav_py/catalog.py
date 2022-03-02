@@ -1,6 +1,5 @@
 """
 """
-
 from platform import node
 import spiceypy as spice
 import requests
@@ -108,7 +107,7 @@ class Catalog:
             self.H = np.delete(self.H, remove_inds)
             self.G = np.delete(self.G, remove_inds)
             self.num_objects = self.num_objects - len(remove_inds)
-            print('DONE')
+            print('DONE (removed {} hyperbolic/parabolic objects)'.format(len(remove_inds)))
             
             self.save(path_to_data)
         return
@@ -124,6 +123,7 @@ class Catalog:
 
     def get_states(self, et=None):
         print("Calculating position at given time...", flush=True, end='')
+        #TODO: Clean this up a bit and do some error checking...
         # Calculate the time since epoch for each object:
         if et is None:
             tsince_epoch = np.zeros((self.num_objects, 1)) # Evaluate at epoch 
@@ -133,27 +133,20 @@ class Catalog:
                 tsince_epoch[idx,:] = et - self.epoch[idx]
 
         # Convert to orbital elements:
-        # r_system = np.zeros((3, self.num_objects, tsince_epoch.shape[1]))
-        # for idx in range(0,self.num_objects):
-        #     r_system[:,idx,:] = Catalog.kepler_to_states_timearray(self.mu[idx], self.a[idx], self.e[idx], self.i[idx],
-        #                                                            self.peri[idx], self.node[idx], self.M[idx], tsince_epoch[idx,:])
-
-        # Convert to orbital elements:
         r_system = np.zeros((3, self.num_objects, tsince_epoch.shape[1]))
-        r_system = Catalog.kepler_to_states_time(self.mu, self.a, self.e, self.i, self.peri, self.node, self.M, tsince_epoch.flatten())
+        r_system = Catalog.kepler_to_state(self.mu, self.a, self.e, self.i, self.peri, self.node, self.M, tsince_epoch.flatten())
+        print("DONE")
 
         # Apply parent system barycenter position:
+        print("Apply system barycenter to satellites...",format=True, end='')
         r_inertial = r_system
         print("DONE")
+        
         return r_inertial
 
 
     @staticmethod
-    def get_visible(data):
-        return visible_dict
-
-    @staticmethod
-    def kepler_to_states_time(mu, a, e, i, peri, node, M0, tsince_epoch):
+    def kepler_to_state(mu, a, e, i, peri, node, M0, tsince_epoch):
         # Calculate Mean Anomaly:
         n = np.sqrt(mu/(a*a*a))
         M = M0 + n*tsince_epoch
@@ -204,54 +197,6 @@ class Catalog:
 
         return r
 
-    @staticmethod
-    def kepler_to_states_timearray(mu, a, e, i, peri, node, M0, tsince_epoch):
-        # Calculate Mean Anomaly:
-        n = np.sqrt(mu/(a*a*a))
-        M = M0 + n*tsince_epoch
 
-        # Calculate eccentric anomaly:
-        theta = np.zeros(tsince_epoch.shape)
-        for idx,ma in enumerate(M):
-            convergencePercentage = 0.05
-            E = 1
-            for iters in range(0,1000):
-                # Set up Newton-Raphson method
-                f = E - e*np.sin(E) - ma
-                df = 1 - e*np.cos(E)
-                E_new = E - f / df
 
-                # Check for convergence
-                relativeDifference = abs(E_new - E) / E * 100
-                if relativeDifference < convergencePercentage:
-                    break
-                E = E_new
-
-            # Calculate the true anomaly:
-            theta[idx] = np.arctan2(np.sqrt(1- e*e)*np.sin(E), np.cos(E) - e)
-
-        # Calculate the orbital momentum and radial position:
-        h = np.sqrt(mu*a*(1-e*e))
-        r_mag = ((h*h)/mu)*(1/(1+(e*np.cos(theta))))
-        
-        # Calculate the states in peri-focal coordinates:
-        R_pqw = np.zeros((3,theta.size))
-        R_pqw[0,:] = np.multiply(r_mag,np.cos(theta)).flatten()
-        R_pqw[1,:] = np.multiply(r_mag,np.sin(theta)).flatten()
-
-        # Calculate vectorized rotations:
-        a11 =  np.cos(node)*np.cos(peri) - np.sin(node)*np.sin(peri)*np.cos(i)
-        a12 =  np.sin(node)*np.cos(peri) + np.cos(node)*np.sin(peri)*np.cos(i)
-
-        a21 = -np.cos(node)*np.sin(peri) - np.sin(node)*np.cos(peri)*np.cos(i)
-        a22 = -np.sin(node)*np.sin(peri) + np.cos(node)*np.cos(peri)*np.cos(i)
-
-        a31 =  np.sin(node)*np.sin(i)
-        a32 = -np.cos(node)*np.sin(i)
-
-        # Apply rotations to obtain position in inertial frame:
-        r = np.vstack( ( (a11*R_pqw[0,:] + a12*R_pqw[1,:]),
-                         (a21*R_pqw[0,:] + a22*R_pqw[1,:]),
-                         (a31*R_pqw[0,:] + a32*R_pqw[1,:]) ) )
-        return r
             
