@@ -1,6 +1,10 @@
 # Ignore the cpp build directory
 build/*
 
+# Ignore data files that are produced:
+*.pickle
+*.csv
+
 # Ignore MICE source code:
 matlab/mice/
 

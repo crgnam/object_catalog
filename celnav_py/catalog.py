@@ -89,12 +89,13 @@ class Catalog:
                 self.G[idx] = obj_data[9]
 
                 # Determine if it is a hyperbolic/parabolic trajectory:
-                if self.a[idx] <= 0 or self.e[idx] >= 1:
+                if (self.a[idx] <= 0 or self.e[idx] >= 1 or np.isnan(self.a[idx]) or np.isnan(self.e[idx]) or np.isnan(self.i[idx]) or
+                    np.isnan(self.peri[idx]) or np.isnan(self.node[idx]) or np.isnan(self.M[idx]) or np.isnan(self.H[idx]) ):
                     remove_inds.append(idx)
             print('DONE')
 
-            # Removing objects with negative semi-major axis:
-            print('Removing objects on hyperbolic/parabolic trajectory...',flush=True,end='')
+            # Remove invalid objects
+            print('Removing objects on hyperbolic/parabolic trajectory or missing elements...',flush=True,end='')
             self.mu = np.delete(self.mu, remove_inds)
             self.spkid = np.delete(self.spkid, remove_inds)
             self.epoch = np.delete(self.epoch, remove_inds)
@@ -107,7 +108,7 @@ class Catalog:
             self.H = np.delete(self.H, remove_inds)
             self.G = np.delete(self.G, remove_inds)
             self.num_objects = self.num_objects - len(remove_inds)
-            print('DONE (removed {} hyperbolic/parabolic objects)'.format(len(remove_inds)))
+            print('DONE (removed {} objects)'.format(len(remove_inds)))
             
             self.save(path_to_data)
         return
@@ -123,26 +124,69 @@ class Catalog:
 
     def get_states(self, et=None):
         print("Calculating position at given time...", flush=True, end='')
-        #TODO: Clean this up a bit and do some error checking...
         # Calculate the time since epoch for each object:
         if et is None:
-            tsince_epoch = np.zeros((self.num_objects, 1)) # Evaluate at epoch 
-        else:
-            tsince_epoch = np.zeros((self.num_objects, et.size))
-            for idx in range(0, self.num_objects):
-                tsince_epoch[idx,:] = et - self.epoch[idx]
+            tsince_epoch = np.zeros((self.num_objects, 0)) # Evaluate at epoch 
+        elif type(et) is float:
+            tsince_epoch = et - self.epoch
+        #TODO Add error handling....
 
         # Convert to orbital elements:
-        r_system = np.zeros((3, self.num_objects, tsince_epoch.shape[1]))
-        r_system = Catalog.kepler_to_state(self.mu, self.a, self.e, self.i, self.peri, self.node, self.M, tsince_epoch.flatten())
+        r_system = np.zeros((3, self.num_objects))
+        r_system = Catalog.kepler_to_state(self.mu, self.a, self.e, self.i, self.peri, self.node, self.M, tsince_epoch)
         print("DONE")
 
         # Apply parent system barycenter position:
-        print("Apply system barycenter to satellites...",format=True, end='')
+        print("Apply system barycenter to satellites...", flush=True, end='')
         r_inertial = r_system
         print("DONE")
         
         return r_inertial
+
+    @staticmethod
+    def get_visible(observer_position, object_positions, H, G, magnitude_maximum, sun_angle_minimum):
+        # CITATION OF H-G MAGNITUDE LAW: 
+        #    Karri Muinonen, Irina N. Belskaya, Alberto Cellino, Marco Delbò, Anny Chantal Levasseur-Regourd,
+        #        et al.. A three-parameter magnitude phase function for asteroids. Icarus, Elsevier, 2010, 209 (2),
+        #        pp.542-555. ff10.1016/j.icarus.2010.04.003ff. ffhal-00676207f
+        #   url: https://hal.archives-ouvertes.fr/hal-00676207/document (pages 8 and 9 of document)
+
+        # Pre-calculate relevant values:
+        observer_position = observer_position.reshape((3,1))
+        observer_to_sun_norm = np.linalg.norm(observer_position)
+        observer_to_sun_unit = -observer_position/observer_to_sun_norm
+
+        observer_to_objects = object_positions - observer_position
+        observer_to_objects_norm = np.linalg.norm(observer_to_objects, axis=0)
+        observer_to_objects_unit = observer_to_objects/observer_to_objects_norm
+
+        sun_to_objects_norm = np.linalg.norm(object_positions, axis=0)
+        sun_to_objects_unit = -object_positions/sun_to_objects_norm
+
+        # Calculate objects that are too angularly close to the sun:
+        sun_angle = np.sum(np.multiply(observer_to_objects_unit, observer_to_sun_unit), axis=0)
+
+        # Calcualte the phase angle:
+        alpha = np.sum(np.multiply(observer_to_objects_unit, sun_to_objects_unit), axis=0) # Phase angle
+
+        # Calculate the apparent magnitude (using Approximated H-G Magnitude Law):
+        PHI_1 = np.exp(-3.33*np.tan((1/2)*alpha)**(0.63)) # Equation 6 in referenced document
+        PHI_2 = np.exp(-1.87*np.tan((1/2)*alpha)**(1.22)) # Equation 6 in referenced document
+        magnitude = H - 2.5*np.log10( (1-G)*PHI_1 + G*PHI_2) # Equation 2 in referenced document
+
+        # If any values are NaN, recalculate using simple magnitude only law:
+        recalculate_indices = np.where(np.isnan(magnitude))[0].tolist()
+        q_alpha = (2/3)*((1 - alpha[recalculate_indices]/np.pi)*np.cos(alpha[recalculate_indices]) + (1/np.pi)*np.sin(alpha[recalculate_indices]))
+        d_bs = sun_to_objects_norm[recalculate_indices]
+        d_bo = observer_to_objects_norm[recalculate_indices]
+        d_o = 149597870.6907
+        magnitude[recalculate_indices] = H[recalculate_indices] + 5*np.log10(d_bs*d_bo/(d_o**2)) - 2.5*np.log10(q_alpha)
+
+        # Determine a boolean array of the potentially visible objects:
+        visible_objects = (magnitude <= magnitude_maximum) & (sun_angle <= sun_angle_minimum)
+        print(np.sum(magnitude <= magnitude_maximum))
+        print(np.sum(sun_angle > sun_angle_minimum))
+        return visible_objects
 
 
     @staticmethod

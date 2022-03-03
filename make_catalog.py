@@ -1,49 +1,28 @@
 import spiceypy as spice
-
 import numpy as np
-import matplotlib.pyplot as plt
 from datetime import datetime
 
 from celnav_py import Catalog
 
-def set_axes_equal(ax):
-    x_limits = ax.get_xlim3d()
-    y_limits = ax.get_ylim3d()
-    z_limits = ax.get_zlim3d()
-
-    x_range = abs(x_limits[1] - x_limits[0])
-    x_middle = np.mean(x_limits)
-    y_range = abs(y_limits[1] - y_limits[0])
-    y_middle = np.mean(y_limits)
-    z_range = abs(z_limits[1] - z_limits[0])
-    z_middle = np.mean(z_limits)
-
-    # The plot bounding box is a sphere in the sense of the infinity
-    # norm, hence I call half the max range the plot radius.
-    plot_radius = 0.5*max([x_range, y_range, z_range])
-
-    ax.set_xlim3d([x_middle - plot_radius, x_middle + plot_radius])
-    ax.set_ylim3d([y_middle - plot_radius, y_middle + plot_radius])
-    ax.set_zlim3d([z_middle - plot_radius, z_middle + plot_radius])
-
+# Load SPICE kernels:
 spice.furnsh("meta_kernel.tm")
 
-my_catalog = Catalog('catalog.pickle')
-
+# Define the observer position and time:
+observer_position = np.array([3e8, 0, 0])
 now = datetime.now() # current date and time
 epoch = spice.str2et(now.strftime("%Y-%m-%d %H:%M:%S"))
-# et_array = np.arange(epoch, epoch + 5*365*86400, int(10*86400))
-et_array = np.array(epoch)
-r = my_catalog.get_states(et = et_array)
+magnitude_maximum = 12
+sun_angle_minimum = np.deg2rad(30)
 
-# Plot the results:
-ax = plt.axes(projection='3d')
+# Create/load the catalog:
+my_catalog = Catalog('catalog.pickle')
 
-# Data for a three-dimensional line
-zline = np.linspace(0, 15, 1000)
-xline = np.sin(zline)
-yline = np.cos(zline)
-# ax.plot3D(r[0,:], r[1,:], r[2,:], 'gray')
-ax.scatter3D(r[0,:],r[1,:],r[2,:],'black')
-set_axes_equal(ax)
-plt.show()
+# Obtain the states of all objects in the catalog:
+object_positions = my_catalog.get_states(et = epoch)
+
+# Determine the potentially visible objects:
+visible_objects = my_catalog.get_visible(observer_position, object_positions, my_catalog.H, my_catalog.G, magnitude_maximum, sun_angle_minimum)
+
+# Write results to a csv (for plotting in MATLAB):
+output_data = np.hstack((object_positions.T, visible_objects.reshape((-1,1)) ))
+np.savetxt("test_data.csv", output_data, delimiter=",")
