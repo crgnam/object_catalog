@@ -2,7 +2,7 @@
 This is a project meant for generating a complete catalog of objects from JPL's HORIZONS system, and identifying potentially visible objects which can then be given to an onboard system for celestial navigation.
 
 ## Generate Catalog with Python
-*Coming Soon*
+1. **Download the relevant SPICE kernels:** `cd generic_kernels/; ./get_kernels.sh`
 
 ## Building C++ Integrator
 ```

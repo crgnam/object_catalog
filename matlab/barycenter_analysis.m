@@ -1,5 +1,6 @@
 matlabrc; clc; close all;
 addpath(genpath('mice'));
+addpath(genpath('tools'));
 
 % Furnsh all of the planet/satellite ephems:
 cspice_furnsh('meta_kernel.tm')
@@ -19,7 +20,6 @@ Rpluto = 1188;
 num_dates = 1000;
 start_date = datetime('01-Jan-2022');
 end_date = datetime('31-Dec-2022');
-
 et_start = cspice_str2et(datestr(start_date));
 et_end = cspice_str2et(datestr(end_date));
 et_range = linspace(et_start, et_end, num_dates);

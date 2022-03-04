@@ -184,8 +184,6 @@ class Catalog:
 
         # Determine a boolean array of the potentially visible objects:
         visible_objects = (magnitude <= magnitude_maximum) & (sun_angle <= sun_angle_minimum)
-        print(np.sum(magnitude <= magnitude_maximum))
-        print(np.sum(sun_angle > sun_angle_minimum))
         return visible_objects
 
 
