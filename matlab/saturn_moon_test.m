@@ -44,7 +44,7 @@ for ii = 1:length(moon_names)
     % Apply a fix:
     n = sqrt(mu/(a^3));
     dPeri = 3*n*(radius^2)*J2*(4 - 5*sin(moon_i(ii))^2)/(4*a^2);
-%     peri = peri + dPeri*tsince;
+    peri = peri + dPeri*tsince;
     
     % Evaluate orbit:
     r_kep = kep2rv(mu, a,e,i,peri,node,M0, tsince);
