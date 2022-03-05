@@ -151,6 +151,7 @@ class Catalog:
         # Europa   502
 
         # Format the outputs:
+        output_data = np.hstack((spk_ids, object_elements))
 
         # Write to a CSV file:
         np.savetxt(output_file, output_data, delimiter=",")

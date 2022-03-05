@@ -6,9 +6,9 @@ addpath(genpath('tools'));
 cspice_furnsh('meta_kernel.tm')
 
 % Planet/Moons to look at:
-planet_name = 'JUPITER';
-moon_names = {'IO','EUROPA','GANYMEDE','CALLISTO'};
-moon_i = deg2rad([0.05, 0.471, 0.204, .205]); % TODO:  Figure out how to calculate these properly
+planet_name = 'SATURN';
+moon_names = {'TITAN','RHEA','TETHYS','DIONE','IAPETUS','ENCELADUS'};
+moon_i = deg2rad([0.349, 0.327, 0.168, 0.002, 15.470, 0.01, 1.566]); % TODO:  Figure out how to calculate these properly
 
 % Obtain the gravitational constants:
 mu = cspice_bodvrd( planet_name, 'GM', 1 );
@@ -30,6 +30,7 @@ t_plt = tsince/86400;
 XLABEL = 'Time since Epoch (days)';
 arrayfun(@cla,findall(0,'type','axes'))
 
+h = [];
 %% Loop through all Moons:
 for ii = 1:length(moon_names)
     % Convert to orbital elements:
@@ -43,7 +44,7 @@ for ii = 1:length(moon_names)
     % Apply a fix:
     n = sqrt(mu/(a^3));
     dPeri = 3*n*(radius^2)*J2*(4 - 5*sin(moon_i(ii))^2)/(4*a^2);
-    peri = peri + dPeri*tsince;
+%     peri = peri + dPeri*tsince;
     
     % Evaluate orbit:
     r_kep = kep2rv(mu, a,e,i,peri,node,M0, tsince);
