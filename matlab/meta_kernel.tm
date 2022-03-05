@@ -14,6 +14,7 @@
                        '$ROOT/nep086.bsp',
                        '$ROOT/plu058.bsp',
                        '$ROOT/gm_de431.tpc',
-                       '$ROOT/pck00010.tpc' )
+                       '$ROOT/Gravity.tpc',
+                       '$ROOT/pck00010.tpc')
  
 \begintext

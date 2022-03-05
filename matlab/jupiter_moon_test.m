@@ -6,17 +6,15 @@ addpath(genpath('tools'));
 cspice_furnsh('meta_kernel.tm')
 
 % Obtain the gravitational constants:
-mu_jupiter    = cspice_bodvrd( 'JUPITER', 'GM', 1 );
+mu_jupiter = cspice_bodvrd( 'JUPITER', 'GM', 1 );
+J2_jupiter = cspice_bodvrd( 'JUPITER', 'J2', 1 );
 radii_jupiter = cspice_bodvrd( 'JUPITER', 'RADII', 3 );
 radius_jupiter = max(radii_jupiter);
-
-% J2 coefficient for Jupiter:
-J2_jupiter = 0.01475;
 
 % Generate a time range:
 num_dates = 1000;
 start_date = datetime('01-Jan-2022');
-end_date = datetime('01-Feb-2022');
+end_date = datetime('01-May-2022');
 et_start = cspice_str2et(datestr(start_date));
 et_end = cspice_str2et(datestr(end_date));
 et_range = linspace(et_start, et_end, num_dates);
@@ -26,10 +24,7 @@ tsince = et_range - et_start;
 t_plt = tsince/86400;
 XLABEL = 'Time since Epoch (days)';
 moon_names = {'IO','EUROPA','GANYMEDE','CALLISTO'};
-
-inc_rate  = [1.6834e-11, 5.3868e-11, -2.1560e-12, 2.6934e-12];
-node_rate = [-3.3668e-12, 4.0401e-11, 6.7335e-12, -6.7335e-12];
-peri_rate = [0, 0, 0, 0];
+moon_i = deg2rad([0.05, 0.471, 0.204, .205]);
 arrayfun(@cla,findall(0,'type','axes'))
 
 %% Loop through all Moons:
@@ -42,10 +37,10 @@ for ii = 1:length(moon_names)
     % Generate the orbital elements:
     [a,e,i,peri,node,M0] =  rv2kep(mu_jupiter, r(:,1),v(:,1));
     
-    % Apply general perturbation models:
-%     dNode = -(3/2)*J2_jupiter*(radius_jupiter/(a*(1-e^2)))^2*sqrt(mu_jupiter/(a^3))*cos(i);
-    node = node - node_rate(ii)*tsince;
-    i = i - inc_rate(ii)*tsince;
+    % Apply a fix:
+    n = sqrt(mu_jupiter/(a^3));
+    dPeri = 3*n*(radius_jupiter^2)*J2_jupiter*(4 - 5*sin(moon_i(ii))^2)/(4*a^2);
+    peri = peri + dPeri*tsince;
     
     % Evaluate orbit:
     r_kep = kep2rv(mu_jupiter, a,e,i,peri,node,M0, tsince);
@@ -90,11 +85,11 @@ for ii = 1:length(moon_names)
         grid on
     subplot(3,1,2)
         plot(t_plt,rsw(2,:)); hold on
-        ylabel('Cross-track (km)')
+        ylabel('In-track (km)')
         grid on
     subplot(3,1,3)
         plot(t_plt,rsw(3,:)); hold on
-        ylabel('In-track (km)')
+        ylabel('Cross-track (km)')
         grid on
         xlabel(XLABEL)
 

@@ -8,7 +8,7 @@ x = data(:,1);
 y = data(:,2);
 z = data(:,3);
 bools = boolean(data(:,4));
-plot3(x(~bools), y(~bools), z(~bools),'.r','MarkerSize',1); hold on
+plot3(x(~bools), y(~bools), z(~bools),'.r','MarkerSize',0.1); hold on
 plot3(x(bools), y(bools), z(bools)+1e9,'.g','MarkerSize',10);
 plot3(3e8, 0, 1e9, '.k','MarkerSize',20);
 axis equal

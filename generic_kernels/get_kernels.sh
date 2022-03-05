@@ -17,6 +17,7 @@ wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/plu05
 
 # Planetary gravity constants:
 wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc
+wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/Gravity.tpc
 
 # Planetary radii:
 wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/pck00010.tpc
