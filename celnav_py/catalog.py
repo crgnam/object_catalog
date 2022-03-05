@@ -143,6 +143,19 @@ class Catalog:
         
         return r_inertial
 
+
+    @staticmethod
+    def write_catalog(objects, output_file):
+        # Name     SPK a e i peri node m0 epoch GM J2
+        # JUPITER  5   
+        # Europa   502
+
+        # Format the outputs:
+
+        # Write to a CSV file:
+        np.savetxt(output_file, output_data, delimiter=",")
+        return
+
     @staticmethod
     def get_visible(observer_position, object_positions, H, G, magnitude_maximum, sun_angle_minimum):
         # CITATION OF H-G MAGNITUDE LAW: 
@@ -196,22 +209,16 @@ class Catalog:
         # Calculate eccentric anomaly:
         theta = np.zeros(M0.shape)
         for idx, ma in enumerate(M):
-            convergencePercentage = 0.05
-            E = 1
+            En = ma
+            Ens = En - (En-e[idx]*np.sin(En) - ma)/(1 - e[idx]*np.cos(En))
             for iters in range(0,1000):
-                # Set up Newton-Raphson method
-                f = E - e[idx]*np.sin(E) - ma
-                df = 1 - e[idx]*np.cos(E)
-                E_new = E - f / df
-
-                # Check for convergence
-                relativeDifference = abs(E_new - E) / E * 100
-                if relativeDifference < convergencePercentage:
+                if np.abs(Ens - En) < 1e-12:
                     break
-                E = E_new
+                En = Ens
+                Ens = En - (En-e[idx]*np.sin(En) - ma)/(1 - e[idx]*np.cos(En))
 
             # Calculate the true anomaly:
-            theta[idx] = np.arctan2(np.sqrt(1- e[idx]*e[idx])*np.sin(E), np.cos(E) - e[idx])
+            theta[idx] = np.arctan2(np.sqrt(1- e[idx]*e[idx])*np.sin(Ens), np.cos(Ens) - e[idx])
 
         # Calculate the orbital momentum and radial position:
         h = np.sqrt(mu*a*(1-e*e))
@@ -223,14 +230,14 @@ class Catalog:
         R_pqw[1,:] = np.multiply(r_mag,np.sin(theta)).flatten()
 
         # Calculate vectorized rotations:
-        a11 =  np.cos(node)*np.cos(peri) - np.sin(node)*np.sin(peri)*np.cos(i)
-        a12 =  np.sin(node)*np.cos(peri) + np.cos(node)*np.sin(peri)*np.cos(i)
+        a11 =  -np.sin(node)*np.cos(i)*np.sin(peri) + np.cos(node)*np.cos(peri)
+        a12 =  -np.sin(node)*np.cos(i)*np.cos(peri) - np.cos(node)*np.sin(peri)
 
-        a21 = -np.cos(node)*np.sin(peri) - np.sin(node)*np.cos(peri)*np.cos(i)
-        a22 = -np.sin(node)*np.sin(peri) + np.cos(node)*np.cos(peri)*np.cos(i)
+        a21 =  np.cos(node)*np.cos(i)*np.sin(peri) + np.sin(node)*np.cos(peri)
+        a22 =  np.cos(node)*np.cos(i)*np.cos(peri) - np.sin(node)*np.sin(peri)
 
-        a31 =  np.sin(node)*np.sin(i)
-        a32 = -np.cos(node)*np.sin(i)
+        a31 =  np.sin(peri)*np.sin(i)
+        a32 =  np.cos(peri)*np.sin(i)
 
         # Apply rotations to obtain position in inertial frame:
         r = np.vstack( ( (a11*R_pqw[0,:] + a12*R_pqw[1,:]),
