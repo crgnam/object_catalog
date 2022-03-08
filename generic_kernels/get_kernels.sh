@@ -15,7 +15,6 @@ wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/sat44
 wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/ura111.bsp
 wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/nep086.bsp
 wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/nep095.bsp
-wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/spk/satellites/plu058.bsp
 
 # Planetary gravity constants:
 wget -nc https://naif.jpl.nasa.gov/pub/naif/generic_kernels/pck/gm_de431.tpc

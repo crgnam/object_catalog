@@ -1,10 +1,10 @@
 """
 """
-from platform import node
 import spiceypy as spice
 import requests
 import os
 from collections import namedtuple
+import csv
 
 import numpy as np
 import pickle
@@ -122,31 +122,61 @@ class Catalog:
         print('DONE')
 
 
-    def get_states(self, et=None):
-        print("Calculating position at given time...", flush=True, end='')
+    def get_asteroid_states(self, et):
+        print("Calculating asteroid positions at given time...", flush=True, end='')
         # Calculate the time since epoch for each object:
-        if et is None:
-            tsince_epoch = np.zeros((self.num_objects, 0)) # Evaluate at epoch 
-        elif type(et) is float:
-            tsince_epoch = et - self.epoch
-        #TODO Add error handling....
-
+        tsince_epoch = et - self.epoch
+        
         # Convert to orbital elements:
         r_system = np.zeros((3, self.num_objects))
         r_system = Catalog.kepler_to_state(self.mu, self.a, self.e, self.i, self.peri, self.node, self.M, tsince_epoch)
         print("DONE")
 
         # Apply parent system barycenter position:
-        print("Apply system barycenter to satellites...", flush=True, end='')
+        print("    Apply system barycenter to satellites...", flush=True, end='')
         r_inertial = r_system
         print("DONE")
         
         return r_inertial
 
+    def get_planet_states(self, et):
+        print("Calculating planet/moon positions at given time...", flush=True, end='')
+        OBJECTS = ['MERCURY',
+                   'VENUS',
+                   'EARTH','MOON',
+                   'MARS',
+                   'JUPITER','IO','EUROPA','GANYMEDE','CALLISTO',
+                   'SATURN','TITAN','RHEA','TETHYS','DIONE','IAPETUS','ENCELADUS',
+                   'URANUS','TITANIA','OBERON','UMBRIEL',
+                   'NEPTUNE','TRITON']
+        r_inertial = np.zeros((3, len(OBJECTS)))
+
+        # Load planetary absolute magnitude data:
+        planetary_H_dict = {}
+        with open('celnav_py/planetary_H.csv') as csvfile:
+            spamreader = csv.reader(csvfile)
+            for row in spamreader:
+                planetary_H_dict[row[0]] = row[2]
+
+        # Load the relevant data:
+        spk_ids = []
+        H = []
+        for idx, object in enumerate(OBJECTS):
+            r_inertial[:,idx],_ = spice.spkpos(object,et,'J2000','NONE','SUN')
+            spk_ids.append(spice.bodn2c(object))
+            H.append(float(planetary_H_dict[str(spice.bodn2c(object))]))
+
+        # Get the G and H data required:
+        print("Obtaining H and G parameters for planets...", flush=True, end='')
+
+        print('DONE')
+        
+        return r_inertial, np.asarray(spk_ids), np.asarray(H)
+
 
     @staticmethod
     def write_catalog(objects, output_file):
-        # Name     SPK a e i peri node m0 epoch GM J2
+        # Name     SPK a e i peri node m0 epoch GM R J2
         # JUPITER  5   
         # Europa   502
 
