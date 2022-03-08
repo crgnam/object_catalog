@@ -11,7 +11,7 @@ spice.furnsh("meta_kernel.tm")
 observer_position = np.array([3e8, 0, 0])
 now = datetime.now() # current date and time
 et = spice.str2et(now.strftime("%Y-%m-%d %H:%M:%S"))
-magnitude_maximum = 11
+magnitude_maximum = 10
 sun_angle_minimum = np.deg2rad(15)
 
 # Create/load the catalog:
@@ -87,7 +87,6 @@ np.savetxt("catalog.csv", output_elements, delimiter=",")
 asteroid_data = np.hstack((asteroid_positions.T, visible_asteroids.reshape((-1,1)) ))
 planet_data   = np.hstack((planet_positions.T, visible_planets.reshape((-1,1)) ))
 output_data   = np.vstack((planet_data, asteroid_data))
-output_data = planet_data
 
 np.savetxt("test_data.csv", output_data, delimiter=",")
 np.savetxt("planet_positions.csv", planet_positions.T)
